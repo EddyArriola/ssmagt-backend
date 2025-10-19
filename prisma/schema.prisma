@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Instituto {
+  id_centro          Int                  @id(map: "departamento_pkey") @default(autoincrement())
+  nombre             String               @db.VarChar(255)
+  id_area            Int?
+  direccion          String?              @db.VarChar(255)
+  telefono           String?              @db.VarChar(20)
+  email              String?              @db.VarChar(100)
+  Area               area?                @relation(fields: [id_area], references: [id_area], onDelete: NoAction, onUpdate: NoAction, map: "instituto_id_area_fkey")
+  solicitud_despacho solicitud_despacho[]
+  solicitud_tarjeta  solicitud_tarjeta[]
+}
+
+model area {
+  id_area     Int         @id @default(autoincrement())
+  descripcion String      @db.VarChar(255)
+  Instituto   Instituto[]
+}
+
+model estado {
+  id_estado                                          Int                 @id @default(autoincrement())
+  descripcion                                        String              @db.VarChar(100)
+  solicitud_tarjeta_solicitud_tarjeta_estadoToestado solicitud_tarjeta[] @relation("solicitud_tarjeta_estadoToestado")
+  tarjeta_tarjeta_estadoToestado                     tarjeta[]           @relation("tarjeta_estadoToestado")
+}
+
+model rol {
+  id_rol      Int       @id @default(autoincrement())
+  descripcion String    @db.VarChar(100)
+  usuario     usuario[]
+}
+
+model solicitud_despacho {
+  id_solicitud      Int
+  id_centro_salud   Int
+  id_solicitante    Int?
+  Instituto         Instituto         @relation(fields: [id_centro_salud], references: [id_centro], onDelete: NoAction, onUpdate: NoAction)
+  usuario           usuario?          @relation(fields: [id_solicitante], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  solicitud_tarjeta solicitud_tarjeta @relation(fields: [id_solicitud], references: [id_solicitud], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id_solicitud, id_centro_salud])
+}
+
+model solicitud_tarjeta {
+  id_solicitud                            Int                  @id @default(autoincrement())
+  id_medico                               Int?
+  fecha_solicitud                         DateTime?            @default(dbgenerated("CURRENT_DATE")) @db.Date
+  id_centro_de_salud                      Int?
+  area                                    String?              @db.VarChar(255)
+  id_ciudadano                            Int?
+  tipo_tarjeta                            Int?
+  estado                                  Int?                 @default(1)
+  observaciones                           String?
+  fecha_capacitacion                      DateTime?            @db.Date
+  examen_medico                           Boolean?
+  solicitud_despacho                      solicitud_despacho[]
+  estado_solicitud_tarjeta_estadoToestado estado?              @relation("solicitud_tarjeta_estadoToestado", fields: [estado], references: [id_estado], onDelete: NoAction, onUpdate: NoAction)
+  Instituto                               Instituto?           @relation(fields: [id_centro_de_salud], references: [id_centro], onDelete: NoAction, onUpdate: NoAction)
+  usuario                                 usuario?             @relation(fields: [id_ciudadano], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  tipo                                    tipo?                @relation(fields: [tipo_tarjeta], references: [id_tipo], onDelete: NoAction, onUpdate: NoAction)
+  tarjeta                                 tarjeta[]
+}
+
+model tarjeta {
+  id_tarjeta                    Int                @id @default(autoincrement())
+  id_solicitud                  Int?
+  fecha_emision                 DateTime?          @db.Date
+  fecha_vencimiento             DateTime?          @db.Date
+  estado                        Int?
+  estado_tarjeta_estadoToestado estado?            @relation("tarjeta_estadoToestado", fields: [estado], references: [id_estado], onDelete: NoAction, onUpdate: NoAction)
+  solicitud_tarjeta             solicitud_tarjeta? @relation(fields: [id_solicitud], references: [id_solicitud], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model tipo {
+  id_tipo           Int                 @id @default(autoincrement())
+  descripcion       String              @db.VarChar(100)
+  solicitud_tarjeta solicitud_tarjeta[]
+}
+
+model usuario {
+  id_usuario         Int                  @id @default(autoincrement())
+  id_rol             Int?                 @default(1)
+  nombres            String               @db.VarChar(100)
+  apellidos          String               @db.VarChar(100)
+  cui                String               @unique @db.VarChar(20)
+  password           String
+  fecha_nacimiento   DateTime?            @db.Date
+  direccion          String?              @db.VarChar(255)
+  telefono           String?              @db.VarChar(20)
+  email              String?              @db.VarChar(100)
+  ocupacion          String?              @db.VarChar(100)
+  solicitud_despacho solicitud_despacho[]
+  solicitud_tarjeta  solicitud_tarjeta[]
+  rol                rol?                 @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
+}
