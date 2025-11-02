@@ -9,37 +9,40 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/auth/roles.enum';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('usuarios')
 export class UsuariosController {
-  
+  constructor(private readonly usuariosService: UsuariosService) {}
+
+  // Endpoint público para crear usuario (registro)
+  @Post()
+  async crearUsuario(@Body() data: CreateUsuarioDto): Promise<usuario> {
+    return this.usuariosService.create(data);
+  }
+
+  // Aplicar guards solo a los endpoints protegidos
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get('perfil')
   getPerfil(@Request() req) {
     return req.user; // contiene id_usuario, email, rol, etc.
   }
 
-  constructor(private readonly usuariosService: UsuariosService) {}
-
-@Roles(Role.ADMINISTRADOR)
-@Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMINISTRADOR)
+  @Get()
   async getTodos(): Promise<usuario[]> {
     return this.usuariosService.findAll();
   }
 
-  @Roles(Role.ADMINISTRADOR)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMINISTRADOR, Role.MEDICO, Role.CIUDADANO)
   @Get(':id')
   async obtenerUno(@Param('id', ParseIntPipe) id: number): Promise<usuario | null> {
     return this.usuariosService.findOne(id);
   }
 
-  @Roles(Role.ADMINISTRADOR)
-  @Post()
-  async crearUsuario(@Body() data: CreateUsuarioDto): Promise<usuario> {
-   return this.usuariosService.create(data);
- }
-
-  @Roles(Role.ADMINISTRADOR)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMINISTRADOR, Role.CIUDADANO)
   @Put(':id')
   async modificarUsuario(
     @Param('id', ParseIntPipe) id: number,
@@ -48,11 +51,10 @@ export class UsuariosController {
     return this.usuariosService.update(id, data);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMINISTRADOR)
   @Delete(':id')
   async eliminarUsuario(@Param('id', ParseIntPipe) id: number): Promise<usuario> {
     return this.usuariosService.remove(id);
   }
-
-  
 }

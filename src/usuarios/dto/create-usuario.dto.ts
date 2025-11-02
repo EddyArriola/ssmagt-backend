@@ -37,5 +37,9 @@ export class CreateUsuarioDto {
 
   @IsString()
   @MinLength(8)
-  password: string; 
+  password: string;
+
+  @IsOptional()
+  @IsInt()
+  instituto?: number; // ✅ Campo directo (minúscula)
 }

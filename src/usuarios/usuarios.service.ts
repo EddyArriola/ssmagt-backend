@@ -23,20 +23,34 @@ export class UsuariosService {
     });
     if (existe) throw new BadRequestException('El usuario ya existe');
 
-    // Hash de la contraseña
+    // Hash de la contraseñas
     const hashedPassword = await bcrypt.hash(createUsuarioDto.password, 10);
 
     // Asignación de rol y creación de usuario
-    const { password, id_rol, ...rest } = createUsuarioDto;
+    const { password, id_rol, instituto, ...rest } = createUsuarioDto;
     return this.prisma.usuario.create({
       data: {
         ...rest,
         password: hashedPassword,
+        id_rol: id_rol,
+        instituto: instituto
         // Si tu modelo tiene un campo diferente para la contraseña, usa ese nombre aquí
         // Por ejemplo: hashed_password: hashedPassword,
-        rol: { connect: { id_rol: id_rol } }
       }
     });
+  }
+
+  async createSimple(createUsuarioDto: CreateUsuarioDto) {
+    const hashedPassword = await bcrypt.hash(createUsuarioDto.password, 10);
+    
+    const data = {
+      ...createUsuarioDto,
+      password: hashedPassword,
+      instituto: createUsuarioDto.instituto, // ✅ Campo directo
+      // NO usar: Instituto: { connect: { ... } } // ❌ Relación
+    };
+
+    return this.prisma.usuario.create({ data });
   }
 
   async findAll() {

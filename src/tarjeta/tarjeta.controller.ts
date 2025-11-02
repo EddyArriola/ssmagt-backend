@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, ParseIntPipe, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Request, ForbiddenException, ParseIntPipe } from '@nestjs/common';
 import { TarjetaService } from './tarjeta.service';
 import { CreateTarjetaDto } from './dto/create-tarjeta.dto';
 import { UpdateTarjetaDto } from './dto/update-tarjeta.dto';
@@ -42,14 +42,21 @@ export class TarjetaController {
   @Get('usuario/:id_usuario')
   async findByUsuario(
     @Param('id_usuario', ParseIntPipe) id_usuario: number,
-    @Req() req,
+    @Request() req,
   ) {
     const requester = req.user;
     const isCiudadano = requester && (requester.id_rol === Role.CIUDADANO || (Array.isArray(requester.roles) && requester.roles.includes(Role.CIUDADANO)));
-    // Un ciudadano solo puede consultar sus propias tarjetas
     if (isCiudadano && Number(requester.id_usuario) !== Number(id_usuario)) {
       throw new ForbiddenException('Permiso denegado');
     }
     return this.tarjetaService.findByUsuario(Number(id_usuario));
+  }
+
+  @Roles(Role.ADMINISTRADOR, Role.MEDICO, Role.CONSULTOR)
+  @Get('centro/:id_centro')
+  async findByCentroSalud(
+    @Param('id_centro', ParseIntPipe) id_centro: number,
+  ) {
+    return this.tarjetaService.findByCentroSalud(Number(id_centro));
   }
 }

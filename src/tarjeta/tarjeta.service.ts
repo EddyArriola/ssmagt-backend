@@ -27,9 +27,8 @@ export class TarjetaService {
     return this.prisma.tarjeta.delete({ where: { id_tarjeta } });
   }
 
-  // Nuevo: buscar todas las tarjetas asociadas a un usuario (a través de las solicitudes)
-  // - Busca solicitudes donde id_ciudadano = id_usuario
-  // - Luego devuelve tarjetas cuya FK a solicitud (id_solicitud) esté en la lista
+  // Buscar todas las tarjetas asociadas a un usuario (a través de las solicitudes)
+  // Incluye datos de la solicitud y del usuario solicitante
   async findByUsuario(id_usuario: number) {
     const id = Number(id_usuario);
 
@@ -42,11 +41,87 @@ export class TarjetaService {
     const solicitudIds = solicitudes.map(s => s.id_solicitud);
     if (solicitudIds.length === 0) return [];
 
-    // Buscar tarjetas que referencian esas solicitudes.
-    // Si en tu esquema la FK en tarjeta tiene otro nombre, ajusta 'id_solicitud' abajo.
     return this.prisma.tarjeta.findMany({
       where: {
         id_solicitud: { in: solicitudIds },
+      },
+      // Incluir datos de la solicitud relacionada y del usuario solicitante
+      include: {
+        solicitud_tarjeta: {
+          select: {
+            id_centro_de_salud: true,
+            id_ciudadano: true,
+            fecha_solicitud: true,
+            tipo_tarjeta: true,
+            estado: true,
+            observaciones: true,
+            fecha_capacitacion: true,
+            examen_medico: true,
+            // Incluir datos del usuario solicitante (ciudadano)
+            usuario: {
+              select: {
+                nombres: true,
+                apellidos: true,
+                cui: true,
+                email: true,
+                telefono: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        fecha_emision: 'desc', // más recientes primero
+      },
+    });
+  }
+
+  // Nuevo: buscar todas las tarjetas por centro de salud
+  // Busca a través de la relación con solicitud_tarjeta
+  // (Se actualizó para incluir los mismos datos de solicitud y usuario solicitante que findByUsuario)
+  async findByCentroSalud(id_centro_de_salud: number) {
+    const id = Number(id_centro_de_salud);
+
+    // Obtener ids de solicitud asociados al centro de salud
+    const solicitudes = await this.prisma.solicitud_tarjeta.findMany({
+      where: { id_centro_de_salud: id },
+      select: { id_solicitud: true },
+    });
+
+    const solicitudIds = solicitudes.map(s => s.id_solicitud);
+    if (solicitudIds.length === 0) return [];
+
+    // Buscar tarjetas que referencian esas solicitudes
+    return this.prisma.tarjeta.findMany({
+      where: {
+        id_solicitud: { in: solicitudIds },
+      },
+      // Incluir datos de la solicitud relacionada y del usuario solicitante (mismos campos que en findByUsuario)
+      include: {
+        solicitud_tarjeta: {
+          select: {
+            id_centro_de_salud: true,
+            id_ciudadano: true,
+            fecha_solicitud: true,
+            tipo_tarjeta: true,
+            estado: true,
+            observaciones: true,
+            fecha_capacitacion: true,
+            examen_medico: true,
+            usuario: {
+              select: {
+                nombres: true,
+                apellidos: true,
+                cui: true,
+                email: true,
+                telefono: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        fecha_emision: 'desc', // más recientes primero
       },
     });
   }

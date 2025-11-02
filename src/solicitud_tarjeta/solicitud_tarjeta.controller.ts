@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, ParseIntPipe, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Request, ForbiddenException, ParseIntPipe, Req } from '@nestjs/common';
 import { SolicitudTarjetaService } from './solicitud_tarjeta.service';
 import { CreateSolicitudTarjetaDto } from './dto/create-solicitud_tarjeta.dto';
 import { UpdateSolicitudTarjetaDto } from './dto/update-solicitud_tarjeta.dto';
@@ -54,5 +54,15 @@ export class SolicitudTarjetaController {
       throw new ForbiddenException('Permiso denegado');
     }
     return this.solicitudTarjetaService.findByUsuario(Number(id_usuario));
+  }
+
+  // Nuevo endpoint: obtener solicitudes pendientes por centro de salud
+  // Útil para personal médico/administrativo del centro
+  @Roles(Role.ADMINISTRADOR, Role.MEDICO, Role.CONSULTOR)
+  @Get('pendientes/centro/:id_centro')
+  async findPendientesPorCentro(
+    @Param('id_centro', ParseIntPipe) id_centro: number,
+  ) {
+    return this.solicitudTarjetaService.findPendientesPorCentro(Number(id_centro));
   }
 }

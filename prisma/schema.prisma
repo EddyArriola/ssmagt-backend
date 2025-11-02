@@ -17,6 +17,7 @@ model Instituto {
   Area               area?                @relation(fields: [id_area], references: [id_area], onDelete: NoAction, onUpdate: NoAction, map: "instituto_id_area_fkey")
   solicitud_despacho solicitud_despacho[]
   solicitud_tarjeta  solicitud_tarjeta[]
+  usuario            usuario[]
 }
 
 model area {
@@ -60,7 +61,7 @@ model solicitud_tarjeta {
   estado                                  Int?                 @default(1)
   observaciones                           String?
   fecha_capacitacion                      DateTime?            @db.Date
-  examen_medico                           Boolean?
+  examen_medico                           String?              @db.VarChar(255)
   solicitud_despacho                      solicitud_despacho[]
   estado_solicitud_tarjeta_estadoToestado estado?              @relation("solicitud_tarjeta_estadoToestado", fields: [estado], references: [id_estado], onDelete: NoAction, onUpdate: NoAction)
   Instituto                               Instituto?           @relation(fields: [id_centro_de_salud], references: [id_centro], onDelete: NoAction, onUpdate: NoAction)
@@ -97,7 +98,9 @@ model usuario {
   telefono           String?              @db.VarChar(20)
   email              String?              @db.VarChar(100)
   ocupacion          String?              @db.VarChar(100)
+  instituto          Int?
   solicitud_despacho solicitud_despacho[]
   solicitud_tarjeta  solicitud_tarjeta[]
   rol                rol?                 @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction)
+  Instituto          Instituto?           @relation(fields: [instituto], references: [id_centro], onDelete: NoAction, onUpdate: NoAction)
 }
