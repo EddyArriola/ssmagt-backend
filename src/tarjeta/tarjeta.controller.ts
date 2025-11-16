@@ -17,7 +17,7 @@ export class TarjetaController {
   create(@Body() createTarjetaDto: CreateTarjetaDto) {
     return this.tarjetaService.create(createTarjetaDto);
   }
-  @Roles(Role.ADMINISTRADOR, Role.MEDICO)
+  @Roles(Role.ADMINISTRADOR, Role.MEDICO, Role.CONSULTOR)
   @Get()
   findAll() {
     return this.tarjetaService.findAll();

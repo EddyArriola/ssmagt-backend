@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "defaultProvider": "azure",
+  "providers": {
+    "azure": {
+      "app": {
+        "name": "ssmagt-backend-app"
+      },
+      "database": {
+        "connectionStringName": "DATABASE_URL"
+      }
+    }
+  }
+}

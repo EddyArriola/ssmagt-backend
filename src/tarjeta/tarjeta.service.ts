@@ -11,8 +11,38 @@ export class TarjetaService {
     return this.prisma.tarjeta.create({ data });
   }
 
+  // Modificado: findAll ahora incluye datos de solicitud, usuario solicitante y médico
   async findAll() {
-    return this.prisma.tarjeta.findMany();
+    return this.prisma.tarjeta.findMany({
+      include: {
+        solicitud_tarjeta: {
+          select: {
+            id_centro_de_salud: true,
+            id_ciudadano: true,
+            id_medico: true,
+            fecha_solicitud: true,
+            tipo_tarjeta: true,
+            estado: true,
+            observaciones: true,
+            fecha_capacitacion: true,
+            examen_medico: true,
+            // Datos del usuario solicitante (ciudadano)
+            usuario: {
+              select: {
+                nombres: true,
+                apellidos: true,
+                cui: true,
+                email: true,
+                telefono: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        fecha_emision: 'desc', // más recientes primero
+      },
+    });
   }
 
   async findOne(id_tarjeta: number) {

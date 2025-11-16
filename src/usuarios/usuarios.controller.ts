@@ -35,14 +35,14 @@ export class UsuariosController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMINISTRADOR, Role.MEDICO, Role.CIUDADANO)
+  @Roles(Role.ADMINISTRADOR, Role.MEDICO, Role.CIUDADANO, Role.CONSULTOR)
   @Get(':id')
   async obtenerUno(@Param('id', ParseIntPipe) id: number): Promise<usuario | null> {
     return this.usuariosService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMINISTRADOR, Role.CIUDADANO)
+  @Roles(Role.ADMINISTRADOR, Role.CIUDADANO, Role.MEDICO, Role.CONSULTOR)
   @Put(':id')
   async modificarUsuario(
     @Param('id', ParseIntPipe) id: number,

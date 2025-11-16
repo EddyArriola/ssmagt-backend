@@ -8,7 +8,11 @@ async function bootstrap() {
   // CORS configurado: permite orígenes concretos y headers necesarios
   const allowedOrigins = [
     'http://localhost:4200',       // frontend local dev
-    'https://app.tudominio.com'    // producción (añade los que necesites)
+    'http://localhost:8080',       // frontend Docker production
+    'http://localhost:80',         // frontend Docker (puerto 80)
+    'http://frontend:80',          // comunicación entre contenedores
+    'https://strand-polished-programme-done.trycloudflare.com',    // producción externa
+    'https://ssmagt-frontend-hccab8eshbc0crg7.canadacentral-01.azurewebsites.net'  // Azure frontend
   ];
 
   app.enableCors({

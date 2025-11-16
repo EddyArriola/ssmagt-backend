@@ -67,18 +67,40 @@ export class UsuariosService {
   }
 
   async update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
-    let data: any = { ...updateUsuarioDto };
-    if (updateUsuarioDto.password) {
-      data.password = await bcrypt.hash(updateUsuarioDto.password, 10);
+    // Crear copia de los datos sin campos problemáticos
+    const { id_usuario, ...data } = updateUsuarioDto as any;
+
+    // Hash de la contraseña si viene en el update
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
+    } else {
+      // Si no hay password, eliminar el campo undefined
+      delete data.password;
     }
-    if (updateUsuarioDto.id_rol) {
-      data.Rol = { connect: { id_rol: updateUsuarioDto.id_rol } };
-      delete data.id_rol;
+
+    // Manejar id_rol: usar campo directo, NO relación
+    if (updateUsuarioDto.id_rol !== undefined) {
+      data.id_rol = updateUsuarioDto.id_rol;
+      // NO crear relación rol si usas campo directo
     }
+
+    // Manejar instituto: usar campo directo, NO relación
+    if (updateUsuarioDto.instituto !== undefined) {
+      data.instituto = updateUsuarioDto.instituto;
+      // NO crear relación Instituto si usas campo directo
+    }
+
+    // Limpiar campos que no deben estar
+    delete data.id_usuario;
+
     return this.prisma.usuario.update({
-      where: { id_usuario: id },
+      where: {
+        id_usuario: id
+      },
       data,
-      include: { rol: true }
+      include: {
+        rol: true
+      }
     });
   }
 

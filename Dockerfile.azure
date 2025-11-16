@@ -1,0 +1,45 @@
+# Azure App Service Dockerfile
+FROM node:20-alpine
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache openssl libc6-compat wget
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar package.json y package-lock.json
+COPY package*.json ./
+
+# Copiar archivos Prisma
+COPY prisma ./prisma/
+
+# Instalar dependencias de producción
+RUN npm ci --omit=dev
+
+# Generar Prisma Client
+RUN npx prisma generate
+
+# Copiar código fuente
+COPY . .
+
+# Build de la aplicación
+RUN npm run build
+
+# Crear usuario no-root
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nestjs -u 1001
+RUN chown -R nestjs:nodejs /app
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8000/health || exit 1
+
+# Exponer puerto
+EXPOSE 8000
+
+# Set environment
+ENV PORT=8000
+ENV NODE_ENV=production
+
+# Comando de inicio
+CMD ["node", "dist/main"]

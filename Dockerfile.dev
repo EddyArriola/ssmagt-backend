@@ -1,0 +1,26 @@
+# Dockerfile para desarrollo del backend NestJS
+FROM node:18-alpine
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache openssl libc6-compat
+
+WORKDIR /app
+
+# Copiar archivos de configuración
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Instalar todas las dependencias (incluyendo dev)
+RUN npm ci
+
+# Generar cliente de Prisma
+RUN npx prisma generate
+
+# Copiar código fuente
+COPY . .
+
+# Exponer puertos
+EXPOSE 3000 9229
+
+# Comando por defecto (puede ser sobrescrito)
+CMD ["npm", "run", "start:dev"]
